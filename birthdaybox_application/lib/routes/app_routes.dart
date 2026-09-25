@@ -3,7 +3,7 @@ import '../screens/add_birthday_screen.dart';
 import '../screens/birthday_details_screen.dart';
 import '../screens/birthdays_screen.dart';
 import '../screens/calendar_screen.dart';
-import '../screens/home_screen.dart';
+import '../screens/dashboard_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/signup_screen.dart';
@@ -18,6 +18,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String home = '/home';
+  static const String dashboard = '/dashboard';
   static const String birthdays = '/birthdays';
   static const String addBirthday = '/add-birthday';
   static const String birthdayDetails = '/birthday-details';
@@ -30,7 +31,8 @@ class AppRoutes {
         splash: (_) => const SplashScreen(),
         login: (_) => const LoginScreen(),
         signup: (_) => const SignupScreen(),
-        home: (_) => const HomeScreen(),
+        home: (_) => const DashboardScreen(),
+        dashboard: (_) => const DashboardScreen(),
         birthdays: (_) => const BirthdaysScreen(),
         addBirthday: (_) => const AddBirthdayScreen(),
         birthdayDetails: (_) => const BirthdayDetailsScreen(),
@@ -49,7 +51,7 @@ class AppRoutes {
     }
     // Fallback route in case an undefined route is requested
     return MaterialPageRoute(
-      builder: (_) => const HomeScreen(),
+      builder: (_) => const DashboardScreen(),
       settings: settings,
     );
   }
