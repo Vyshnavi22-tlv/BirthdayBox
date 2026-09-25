@@ -20,22 +20,25 @@ void main() {
 }
 
 /// Root application widget for BirthdayBox.
-/// Configures MaterialApp with Light/Dark themes and AppRoutes.
+/// Uses `Consumer<ThemeProvider>` to rebuild `MaterialApp` when the theme mode changes.
+/// Demonstrates Provider state management (Lab Experiment 5b).
 class BirthdayBoxApp extends StatelessWidget {
   const BirthdayBoxApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final themeProvider = Provider.of<ThemeProvider>(context);
-
-    return MaterialApp(
-      title: AppConstants.appName,
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: themeProvider.themeMode,
-      initialRoute: AppRoutes.home,
-      onGenerateRoute: AppRoutes.onGenerateRoute,
+    return Consumer<ThemeProvider>(
+      builder: (context, themeProvider, child) {
+        return MaterialApp(
+          title: AppConstants.appName,
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.lightTheme,
+          darkTheme: AppTheme.darkTheme,
+          themeMode: themeProvider.themeMode,
+          initialRoute: AppRoutes.home,
+          onGenerateRoute: AppRoutes.onGenerateRoute,
+        );
+      },
     );
   }
 }

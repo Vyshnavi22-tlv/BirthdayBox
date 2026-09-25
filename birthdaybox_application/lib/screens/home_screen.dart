@@ -20,7 +20,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final birthdayProvider = Provider.of<BirthdayProvider>(context);
-    final isDark = themeProvider.isDarkMode(context);
+    final isDark = themeProvider.isDarkMode;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
