@@ -68,41 +68,49 @@ class CountdownCard extends StatelessWidget {
                   // Header badge
                   Row(
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isToday
-                              ? AppTheme.celebrationGold.withValues(alpha: 0.2)
-                              : colorScheme.primary.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: isToday
-                                ? AppTheme.celebrationGold
-                                : colorScheme.primary,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(isToday ? '🎂 ' : '⏳ '),
-                            Text(
-                              isToday ? 'CELEBRATING TODAY!' : 'NEXT UPCOMING BIRTHDAY',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: isToday
+                                  ? AppTheme.celebrationGold.withValues(alpha: 0.2)
+                                  : colorScheme.primary.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
                                 color: isToday
                                     ? AppTheme.celebrationGold
                                     : colorScheme.primary,
+                                width: 1,
                               ),
                             ),
-                          ],
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(isToday ? '🎂 ' : '⏳ '),
+                                  Text(
+                                    isToday ? 'CELEBRATING TODAY!' : 'NEXT UPCOMING BIRTHDAY',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: isToday
+                                          ? AppTheme.celebrationGold
+                                          : colorScheme.primary,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 8),
                       Text(
                         birthday.avatarEmoji,
                         style: const TextStyle(fontSize: 28),
@@ -130,35 +138,41 @@ class CountdownCard extends StatelessWidget {
                   const Divider(height: 28),
 
                   // Countdown digits display (Days & Hours)
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    alignment: WrapAlignment.spaceBetween,
+                    spacing: 12,
+                    runSpacing: 10,
                     children: [
-                      // Days unit
-                      _CountdownUnit(
-                        value: isToday ? '0' : '$days',
-                        label: days == 1 ? 'DAY' : 'DAYS',
-                        highlightColor: colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      // Hours unit
-                      _CountdownUnit(
-                        value: isToday ? '0' : '$remainingHours',
-                        label: 'HOURS',
-                        highlightColor: colorScheme.secondary,
-                      ),
-                      const Spacer(),
-                      // Subtitle status
-                      Flexible(
-                        child: Text(
-                          isToday
-                              ? 'Wish them a Happy Birthday today! 🥳'
-                              : days <= 7
-                                  ? 'Coming up very soon! Prepare gift 🎁'
-                                  : 'Marked on your calendar 📅',
-                          textAlign: TextAlign.end,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: colorScheme.onSurfaceVariant,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // Days unit
+                          _CountdownUnit(
+                            value: isToday ? '0' : '$days',
+                            label: days == 1 ? 'DAY' : 'DAYS',
+                            highlightColor: colorScheme.primary,
                           ),
+                          const SizedBox(width: 12),
+                          // Hours unit
+                          _CountdownUnit(
+                            value: isToday ? '0' : '$remainingHours',
+                            label: 'HOURS',
+                            highlightColor: colorScheme.secondary,
+                          ),
+                        ],
+                      ),
+                      // Subtitle status
+                      Text(
+                        isToday
+                            ? 'Wish them a Happy Birthday today! 🥳'
+                            : days <= 7
+                                ? 'Coming up very soon! Prepare gift 🎁'
+                                : 'Marked on your calendar 📅',
+                        textAlign: TextAlign.end,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],

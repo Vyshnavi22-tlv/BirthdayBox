@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/birthday.dart';
 import '../providers/birthday_provider.dart';
-import '../providers/theme_provider.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
@@ -10,399 +9,334 @@ import '../widgets/birthday_card.dart';
 import '../widgets/countdown_card.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/responsive_scaffold.dart';
 import '../widgets/stat_card.dart';
 
-/// Final Responsive BirthdayBox Dashboard.
+/// Responsive BirthdayBox Dashboard.
 /// Demonstrates:
-/// - Row, Column, Container, Card, Stack composition (Lab Experiment 2b)
-/// - Responsive UI: Mobile (single column), Tablet (2-column cards), Desktop (Sidebar + multi-column) (Lab 3a & 3b)
-/// - State Management with Provider & auto-updating UI (Lab Experiment 5b)
-/// - Custom Reusable Widgets (Lab Experiment 6a)
-/// - Themes & Custom Styles without hardcoded colors (Lab Experiment 6b)
+/// - Reusable Responsive Layout and Scaffolding without screen duplication (Lab Experiments 3a & 3b)
+/// - Breakpoints: Mobile (< 600px), Tablet (600px - 1023px), Desktop (>= 1024px)
+/// - Mobile: Bottom navigation + single-column cards
+/// - Tablet: Two-column cards layout + more horizontal spacing
+/// - Desktop: Sidebar navigation + multi-column content + larger content area
+/// - State Management with BirthdayProvider & auto-updating UI (Lab Experiment 5b)
+/// - Custom Reusable Widgets (Lab Experiment 6a) & Theming without hardcoded colors (Lab Experiment 6b)
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const ResponsiveLayout(
-      mobile: _DashboardMobileView(),
-      tablet: _DashboardTabletView(),
-      desktop: _DashboardDesktopView(),
-    );
-  }
-}
-
-// ==========================================
-// 1. MOBILE LAYOUT (<600px) - Single Column
-// ==========================================
-class _DashboardMobileView extends StatelessWidget {
-  const _DashboardMobileView();
-
-  @override
-  Widget build(BuildContext context) {
     final birthdayProvider = Provider.of<BirthdayProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDarkMode;
-    final upcomingList = birthdayProvider.upcomingBirthdays;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const _DashboardHeaderTitle(),
-        actions: [
-          IconButton(
-            tooltip: 'Profile',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-          ),
-          IconButton(
-            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(!isDark),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+    return ResponsiveScaffold(
+      currentNavIndex: 0,
+      title: const _DashboardHeaderTitle(),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
         icon: const Icon(Icons.add),
         label: const Text('Add Birthday'),
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        children: [
-          // Welcome message banner
-          const _WelcomeBanner(layoutName: 'Mobile (Single Column)'),
-          const SizedBox(height: 16),
+      body: ResponsiveLayout.builder(
+        builder: (context, constraints, deviceType) {
+          final upcomingList = birthdayProvider.upcomingBirthdays;
 
-          // Statistics (3 cards in Row)
-          _DashboardStatisticsRow(birthdayProvider: birthdayProvider),
-          const SizedBox(height: 16),
+          // Responsive horizontal padding across breakpoints
+          final horizontalPadding = ResponsiveLayout.value<double>(
+            context,
+            mobile: 16.0,
+            tablet: 28.0,
+            desktop: 36.0,
+          );
 
-          // Nearest countdown spotlight card
-          if (upcomingList.isNotEmpty) ...[
-            CountdownCard(
-              birthday: upcomingList.first,
-              onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+          // Responsive layout mode badge for academic demonstration
+          final layoutBadge = switch (deviceType) {
+            DeviceType.mobile => 'Mobile (Single Column)',
+            DeviceType.tablet => 'Tablet (2-Column Adaptive)',
+            DeviceType.desktop => 'Dashboard (Sidebar + Multi-Column)',
+          };
+
+          return ListView(
+            padding: EdgeInsets.symmetric(
+              horizontal: horizontalPadding,
+              vertical: deviceType == DeviceType.desktop ? 24.0 : 16.0,
             ),
-            const SizedBox(height: 16),
-          ],
-
-          // Upcoming celebrations header
-          _UpcomingSectionHeader(
-            count: upcomingList.length,
-            onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-          ),
-          const SizedBox(height: 10),
-
-          // Single-column birthday cards
-          if (upcomingList.isEmpty)
-            const _EmptyBirthdaysPlaceholder()
-          else
-            ...upcomingList.map(
-              (birthday) => Padding(
-                padding: const EdgeInsets.only(bottom: 8.0),
-                child: BirthdayCard(
-                  birthday: birthday,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
-                  onDelete: () => _confirmDelete(context, birthdayProvider, birthday),
-                ),
-              ),
-            ),
-
-          const SizedBox(height: 20),
-
-          // Quick Navigation Hub
-          const _DashboardNavigationChips(),
-
-          const SizedBox(height: 60), // Spacing for FAB
-        ],
-      ),
-    );
-  }
-}
-
-// ==========================================
-// 2. TABLET LAYOUT (600px - 1024px) - 2-Column Cards
-// ==========================================
-class _DashboardTabletView extends StatelessWidget {
-  const _DashboardTabletView();
-
-  @override
-  Widget build(BuildContext context) {
-    final birthdayProvider = Provider.of<BirthdayProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDarkMode;
-    final upcomingList = birthdayProvider.upcomingBirthdays;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: const _DashboardHeaderTitle(),
-        actions: [
-          IconButton(
-            tooltip: 'Calendar',
-            icon: const Icon(Icons.calendar_month_outlined),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.calendar),
-          ),
-          IconButton(
-            tooltip: 'Profile',
-            icon: const Icon(Icons.person_outline),
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-          ),
-          IconButton(
-            tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-            onPressed: () => themeProvider.toggleTheme(!isDark),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
-        icon: const Icon(Icons.add),
-        label: const Text('Add Birthday'),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 960),
-          child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             children: [
-              // Welcome header banner
-              const _WelcomeBanner(layoutName: 'Tablet (2-Column Adaptive)'),
-              const SizedBox(height: 18),
+              // 1. Welcome Greeting Banner (Shared across layouts)
+              _WelcomeBanner(layoutName: layoutBadge),
+              const SizedBox(height: 16),
 
-              // 3 Statistics Cards
+              // 2. Statistics Row (Total Birthdays, This Month, Today's) - Shared component
               _DashboardStatisticsRow(birthdayProvider: birthdayProvider),
-              const SizedBox(height: 18),
+              const SizedBox(height: 20),
 
-              // Countdown spotlight card
-              if (upcomingList.isNotEmpty) ...[
-                CountdownCard(
-                  birthday: upcomingList.first,
-                  onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
-                ),
-                const SizedBox(height: 18),
-              ],
-
-              // Upcoming celebrations header
-              _UpcomingSectionHeader(
-                count: upcomingList.length,
-                onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-              ),
-              const SizedBox(height: 12),
-
-              // Two-column birthday cards grid
-              if (upcomingList.isEmpty)
-                const _EmptyBirthdaysPlaceholder()
+              // 3. Celebrations Section (Adapts responsively without screen duplication)
+              if (deviceType == DeviceType.desktop)
+                // Desktop: Multi-column content (Left flex 5: spotlight & actions; Right flex 7: grid)
+                _DashboardDesktopContent(
+                  upcomingList: upcomingList,
+                  birthdayProvider: birthdayProvider,
+                )
+              else if (deviceType == DeviceType.tablet)
+                // Tablet: Spotlight Countdown + 2-Column Cards Grid with adaptive spacing
+                _DashboardTabletContent(
+                  upcomingList: upcomingList,
+                  birthdayProvider: birthdayProvider,
+                )
               else
-                GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 12,
-                    mainAxisExtent: 110,
-                  ),
-                  itemCount: upcomingList.length,
-                  itemBuilder: (context, index) {
-                    final b = upcomingList[index];
-                    return BirthdayCard(
-                      birthday: b,
-                      onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
-                      onDelete: () => _confirmDelete(context, birthdayProvider, b),
-                    );
-                  },
+                // Mobile: Spotlight Countdown + Single-Column Cards List
+                _DashboardMobileContent(
+                  upcomingList: upcomingList,
+                  birthdayProvider: birthdayProvider,
                 ),
 
               const SizedBox(height: 24),
+
+              // 4. Quick Navigation Hub (Shared component)
               const _DashboardNavigationChips(),
-              const SizedBox(height: 60),
+
+              const SizedBox(height: 60), // Spacing for FAB
             ],
-          ),
-        ),
+          );
+        },
       ),
     );
   }
 }
 
 // ==========================================
-// 3. DESKTOP LAYOUT (≥1024px) - Sidebar + Multi-Column
+// 1. MOBILE CONTENT (< 600px) - Single Column
 // ==========================================
-class _DashboardDesktopView extends StatelessWidget {
-  const _DashboardDesktopView();
+class _DashboardMobileContent extends StatelessWidget {
+  final List<Birthday> upcomingList;
+  final BirthdayProvider birthdayProvider;
+
+  const _DashboardMobileContent({
+    required this.upcomingList,
+    required this.birthdayProvider,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final birthdayProvider = Provider.of<BirthdayProvider>(context);
-    final themeProvider = Provider.of<ThemeProvider>(context);
-    final isDark = themeProvider.isDarkMode;
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-    final upcomingList = birthdayProvider.upcomingBirthdays;
-
-    return Scaffold(
-      body: Row(
-        children: [
-          // Persistent Sidebar
-          _DesktopSidebar(
-            isDark: isDark,
-            onToggleTheme: () => themeProvider.toggleTheme(!isDark),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (upcomingList.isNotEmpty) ...[
+          CountdownCard(
+            birthday: upcomingList.first,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
           ),
-
-          // Main Multi-Column Content
-          Expanded(
-            child: Scaffold(
-              appBar: AppBar(
-                title: const Text('Dashboard Overview'),
-                actions: [
-                  IconButton(
-                    tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                    icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                    onPressed: () => themeProvider.toggleTheme(!isDark),
-                  ),
-                  IconButton(
-                    tooltip: 'Profile',
-                    icon: const Icon(Icons.person_outline),
-                    onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-                  ),
-                  const SizedBox(width: 16),
-                ],
-              ),
-              floatingActionButton: FloatingActionButton.extended(
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
-                icon: const Icon(Icons.add),
-                label: const Text('Add Birthday'),
-              ),
-              body: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 20),
-                children: [
-                  // Welcome banner
-                  const _WelcomeBanner(layoutName: 'Dashboard (Sidebar + Multi-Column)'),
-                  const SizedBox(height: 20),
-
-                  // 3-card Statistics row
-                  _DashboardStatisticsRow(birthdayProvider: birthdayProvider),
-                  const SizedBox(height: 24),
-
-                  // Multi-column section: Left Spotlight + Right Grid
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Column: Spotlight Countdown + Quick Actions
-                      Expanded(
-                        flex: 5,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            if (upcomingList.isNotEmpty)
-                              CountdownCard(
-                                birthday: upcomingList.first,
-                                onTap: () => Navigator.pushNamed(
-                                  context,
-                                  AppRoutes.birthdayDetails,
-                                ),
-                              )
-                            else
-                              const _EmptyBirthdaysPlaceholder(),
-                            const SizedBox(height: 16),
-                            Card(
-                              child: Padding(
-                                padding: const EdgeInsets.all(20.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Icon(Icons.bolt, color: colorScheme.primary),
-                                        const SizedBox(width: 8),
-                                        Text('Quick Actions', style: theme.textTheme.titleMedium),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 14),
-                                    CustomButton(
-                                      onPressed: () => Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.addBirthday,
-                                      ),
-                                      text: 'Add New Birthday',
-                                      icon: Icons.add,
-                                    ),
-                                    const SizedBox(height: 10),
-                                    CustomButton(
-                                      onPressed: () => Navigator.pushNamed(
-                                        context,
-                                        AppRoutes.birthdays,
-                                      ),
-                                      text: 'View All Celebrations',
-                                      icon: Icons.cake_outlined,
-                                      isOutlined: true,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(width: 24),
-
-                      // Right Column: Upcoming Celebrations Grid
-                      Expanded(
-                        flex: 7,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            _UpcomingSectionHeader(
-                              count: upcomingList.length,
-                              onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-                            ),
-                            const SizedBox(height: 12),
-                            if (upcomingList.isEmpty)
-                              const _EmptyBirthdaysPlaceholder()
-                            else
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 2,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  mainAxisExtent: 110,
-                                ),
-                                itemCount: upcomingList.length,
-                                itemBuilder: (context, index) {
-                                  final b = upcomingList[index];
-                                  return BirthdayCard(
-                                    birthday: b,
-                                    onTap: () => Navigator.pushNamed(
-                                      context,
-                                      AppRoutes.birthdayDetails,
-                                    ),
-                                    onDelete: () => _confirmDelete(
-                                      context,
-                                      birthdayProvider,
-                                      b,
-                                    ),
-                                  );
-                                },
-                              ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 28),
-                  const _DashboardNavigationChips(),
-                  const SizedBox(height: 60),
-                ],
+          const SizedBox(height: 16),
+        ],
+        _UpcomingSectionHeader(
+          count: upcomingList.length,
+          onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+        ),
+        const SizedBox(height: 10),
+        if (upcomingList.isEmpty)
+          const _EmptyBirthdaysPlaceholder()
+        else
+          ...upcomingList.map(
+            (b) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: BirthdayCard(
+                birthday: b,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                onDelete: () => _confirmDelete(context, birthdayProvider, b),
               ),
             ),
           ),
+      ],
+    );
+  }
+}
+
+// ==========================================
+// 2. TABLET CONTENT (600px - 1023px) - 2-Column Grid
+// ==========================================
+class _DashboardTabletContent extends StatelessWidget {
+  final List<Birthday> upcomingList;
+  final BirthdayProvider birthdayProvider;
+
+  const _DashboardTabletContent({
+    required this.upcomingList,
+    required this.birthdayProvider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (upcomingList.isNotEmpty) ...[
+          CountdownCard(
+            birthday: upcomingList.first,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+          ),
+          const SizedBox(height: 18),
         ],
-      ),
+        _UpcomingSectionHeader(
+          count: upcomingList.length,
+          onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+        ),
+        const SizedBox(height: 12),
+        if (upcomingList.isEmpty)
+          const _EmptyBirthdaysPlaceholder()
+        else
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              mainAxisExtent: 115,
+            ),
+            itemCount: upcomingList.length,
+            itemBuilder: (context, index) {
+              final b = upcomingList[index];
+              return BirthdayCard(
+                birthday: b,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                onDelete: () => _confirmDelete(context, birthdayProvider, b),
+              );
+            },
+          ),
+      ],
+    );
+  }
+}
+
+// ==========================================
+// 3. DESKTOP CONTENT (>= 1024px) - Multi-Column Area
+// ==========================================
+class _DashboardDesktopContent extends StatelessWidget {
+  final List<Birthday> upcomingList;
+  final BirthdayProvider birthdayProvider;
+
+  const _DashboardDesktopContent({
+    required this.upcomingList,
+    required this.birthdayProvider,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Left Column (flex 5): Spotlight Countdown & Quick Actions Card
+        Expanded(
+          flex: 5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (upcomingList.isNotEmpty)
+                CountdownCard(
+                  birthday: upcomingList.first,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                )
+              else
+                const _EmptyBirthdaysPlaceholder(),
+              const SizedBox(height: 16),
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.bolt, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Quick Actions',
+                              style: theme.textTheme.titleMedium,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      CustomButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
+                        text: 'Add New Birthday',
+                        icon: Icons.add,
+                      ),
+                      const SizedBox(height: 10),
+                      CustomButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+                        text: 'View All Celebrations',
+                        icon: Icons.cake_outlined,
+                        isOutlined: true,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(width: 24),
+
+        // Right Column (flex 7): Section Header & Celebrations Grid
+        Expanded(
+          flex: 7,
+          child: LayoutBuilder(
+            builder: (context, colConstraints) {
+              final useTwoCols = colConstraints.maxWidth >= 480;
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _UpcomingSectionHeader(
+                    count: upcomingList.length,
+                    onViewAll: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+                  ),
+                  const SizedBox(height: 12),
+                  if (upcomingList.isEmpty)
+                    const _EmptyBirthdaysPlaceholder()
+                  else if (!useTwoCols)
+                    ...upcomingList.map(
+                      (b) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8.0),
+                        child: BirthdayCard(
+                          birthday: b,
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                          onDelete: () => _confirmDelete(context, birthdayProvider, b),
+                        ),
+                      ),
+                    )
+                  else
+                    GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 14,
+                        mainAxisSpacing: 14,
+                        mainAxisExtent: 115,
+                      ),
+                      itemCount: upcomingList.length,
+                      itemBuilder: (context, index) {
+                        final b = upcomingList[index];
+                        return BirthdayCard(
+                          birthday: b,
+                          onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                          onDelete: () => _confirmDelete(context, birthdayProvider, b),
+                        );
+                      },
+                    ),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }
@@ -482,20 +416,23 @@ class _WelcomeBanner extends StatelessWidget {
                   color: colorScheme.primary.withValues(alpha: 0.3),
                 ),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.devices, size: 16, color: colorScheme.primary),
-                  const SizedBox(width: 6),
-                  Text(
-                    layoutName,
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: colorScheme.primary,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.devices, size: 16, color: colorScheme.primary),
+                    const SizedBox(width: 6),
+                    Text(
+                      layoutName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: colorScheme.primary,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ],
@@ -607,13 +544,16 @@ class _EmptyBirthdaysPlaceholder extends StatelessWidget {
             const Text('🎂', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 8),
             Text(
-              'No upcoming birthdays yet!',
-              style: theme.textTheme.titleSmall,
+              'No upcoming birthdays',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Tap the button below to add your first birthday.',
-              style: theme.textTheme.bodySmall?.copyWith(
+              'Tap "+ Add Birthday" to record your loved ones’ special days.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
@@ -624,156 +564,7 @@ class _EmptyBirthdaysPlaceholder extends StatelessWidget {
   }
 }
 
-/// Desktop Navigation Sidebar
-class _DesktopSidebar extends StatelessWidget {
-  final bool isDark;
-  final VoidCallback onToggleTheme;
-
-  const _DesktopSidebar({
-    required this.isDark,
-    required this.onToggleTheme,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Container(
-      width: 240,
-      decoration: BoxDecoration(
-        color: theme.cardTheme.color,
-        border: Border(
-          right: BorderSide(
-            color: colorScheme.outline.withValues(alpha: 0.5),
-            width: 1,
-          ),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Logo & Title
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-            child: Row(
-              children: [
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    color: colorScheme.primaryContainer,
-                    shape: BoxShape.circle,
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text('🎂', style: TextStyle(fontSize: 22)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    AppConstants.appName,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(height: 1),
-          const SizedBox(height: 12),
-
-          // Navigation Links
-          _SidebarTile(
-            icon: Icons.dashboard_outlined,
-            title: 'Dashboard',
-            isSelected: true,
-            onTap: () {},
-          ),
-          _SidebarTile(
-            icon: Icons.cake_outlined,
-            title: 'All Birthdays',
-            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-          ),
-          _SidebarTile(
-            icon: Icons.add_circle_outline,
-            title: 'Add Birthday',
-            onTap: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
-          ),
-          _SidebarTile(
-            icon: Icons.calendar_month_outlined,
-            title: 'Calendar',
-            onTap: () => Navigator.pushNamed(context, AppRoutes.calendar),
-          ),
-          _SidebarTile(
-            icon: Icons.person_outline,
-            title: 'Profile & Settings',
-            onTap: () => Navigator.pushNamed(context, AppRoutes.profile),
-          ),
-
-          const Spacer(),
-          const Divider(height: 1),
-
-          // Theme Switcher Tile
-          ListTile(
-            leading: Icon(
-              isDark ? Icons.light_mode : Icons.dark_mode,
-              color: colorScheme.primary,
-            ),
-            title: Text(isDark ? 'Light Mode' : 'Dark Mode'),
-            onTap: onToggleTheme,
-          ),
-          const SizedBox(height: 12),
-        ],
-      ),
-    );
-  }
-}
-
-class _SidebarTile extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _SidebarTile({
-    required this.icon,
-    required this.title,
-    this.isSelected = false,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
-      child: ListTile(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-        ),
-        selected: isSelected,
-        selectedTileColor: colorScheme.primaryContainer.withValues(alpha: 0.4),
-        selectedColor: colorScheme.primary,
-        leading: Icon(icon),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-          ),
-        ),
-        onTap: onTap,
-      ),
-    );
-  }
-}
-
-/// Navigation Chips for verifying named routes
+/// Quick Navigation Hub
 class _DashboardNavigationChips extends StatelessWidget {
   const _DashboardNavigationChips();
 
@@ -782,54 +573,49 @@ class _DashboardNavigationChips extends StatelessWidget {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Quick Navigation',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: colorScheme.onSurfaceVariant,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Row(
-              children: [
-                Icon(Icons.alt_route, color: colorScheme.primary, size: 20),
-                const SizedBox(width: 8),
-                Text('Quick Route Shortcuts', style: theme.textTheme.titleSmall),
-              ],
+            ActionChip(
+              avatar: const Icon(Icons.cake_outlined, size: 18),
+              label: const Text('Birthdays List'),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                ActionChip(
-                  avatar: const Icon(Icons.cake, size: 16),
-                  label: const Text('/birthdays'),
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.add, size: 16),
-                  label: const Text('/add-birthday'),
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.calendar_month, size: 16),
-                  label: const Text('/calendar'),
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.calendar),
-                ),
-                ActionChip(
-                  avatar: const Icon(Icons.person, size: 16),
-                  label: const Text('/profile'),
-                  onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
-                ),
-              ],
+            ActionChip(
+              avatar: const Icon(Icons.calendar_month_outlined, size: 18),
+              label: const Text('Calendar View'),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.calendar),
+            ),
+            ActionChip(
+              avatar: const Icon(Icons.person_outline, size: 18),
+              label: const Text('User Profile'),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+            ),
+            ActionChip(
+              avatar: const Icon(Icons.add_circle_outline, size: 18),
+              label: const Text('New Birthday'),
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 }
 
-/// Helper function to confirm deleting a birthday
+/// Delete Confirmation Dialog
 void _confirmDelete(
   BuildContext context,
   BirthdayProvider provider,
@@ -838,22 +624,31 @@ void _confirmDelete(
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Delete Birthday'),
-      content: Text('Are you sure you want to remove ${birthday.name}?'),
+      title: const Text('Delete Birthday?'),
+      content: Text(
+        'Are you sure you want to remove ${birthday.name}’s birthday celebration from your list?',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx),
           child: const Text('Cancel'),
         ),
-        TextButton(
-          style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.error,
+            foregroundColor: Colors.white,
+          ),
           onPressed: () {
             provider.deleteBirthday(birthday.id);
             Navigator.pop(ctx);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('${birthday.name} removed'),
-                behavior: SnackBarBehavior.floating,
+                content: Text('Removed ${birthday.name}’s birthday'),
+                action: SnackBarAction(
+                  label: 'Dismiss',
+                  textColor: Colors.white,
+                  onPressed: () {},
+                ),
               ),
             );
           },
