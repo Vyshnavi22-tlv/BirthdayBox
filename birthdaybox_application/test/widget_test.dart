@@ -2,11 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:birthdaybox_application/main.dart';
+import 'package:birthdaybox_application/models/birthday_model.dart';
 import 'package:birthdaybox_application/providers/birthday_provider.dart';
 import 'package:birthdaybox_application/providers/theme_provider.dart';
 import 'package:birthdaybox_application/screens/login_screen.dart';
 import 'package:birthdaybox_application/screens/signup_screen.dart';
+import 'package:birthdaybox_application/widgets/birthday_card.dart';
+import 'package:birthdaybox_application/widgets/countdown_card.dart';
 import 'package:birthdaybox_application/widgets/custom_button.dart';
+import 'package:birthdaybox_application/widgets/custom_textfield.dart';
+import 'package:birthdaybox_application/widgets/stat_card.dart';
 
 void main() {
   testWidgets('SplashScreen renders with logo, name, tagline, and transitions',
@@ -90,7 +95,6 @@ void main() {
 
   testWidgets('Navigation: Login -> Sign Up -> Login',
       (WidgetTester tester) async {
-    // Set a large enough surface size so all elements are accessible
     tester.view.physicalSize = const Size(800, 1000);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() => tester.view.resetPhysicalSize());
@@ -177,5 +181,57 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Passwords do not match'), findsOneWidget);
+  });
+
+  testWidgets('Custom Widgets: StatCard, BirthdayCard, and CountdownCard render correctly',
+      (WidgetTester tester) async {
+    final sampleBirthday = BirthdayModel(
+      id: 'test-1',
+      name: 'Ananya Sharma',
+      dateOfBirth: DateTime(2003, 10, 15),
+      relationship: 'Friend',
+      phoneNumber: '9876543210',
+      notes: 'Loves books',
+      avatarEmoji: '🌸',
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: Column(
+              children: [
+                const StatCard(
+                  icon: '🎂',
+                  number: '12',
+                  label: 'Total Birthdays',
+                ),
+                BirthdayCard(birthday: sampleBirthday),
+                CountdownCard(birthday: sampleBirthday),
+                CustomButton(onPressed: () {}, text: 'Action Button'),
+                const CustomTextField(labelText: 'Custom Input'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    // Verify StatCard
+    expect(find.text('12'), findsOneWidget);
+    expect(find.text('Total Birthdays'), findsOneWidget);
+
+    // Verify BirthdayCard
+    expect(find.text('Ananya Sharma'), findsNWidgets(2)); // in BirthdayCard & CountdownCard
+    expect(find.text('Friend'), findsOneWidget);
+    expect(find.text('🌸'), findsNWidgets(2));
+
+    // Verify CountdownCard units
+    expect(find.text('DAYS'), findsOneWidget);
+    expect(find.text('HOURS'), findsOneWidget);
+
+    // Verify CustomButton & CustomTextField
+    expect(find.text('Action Button'), findsOneWidget);
+    expect(find.text('Custom Input'), findsOneWidget);
   });
 }

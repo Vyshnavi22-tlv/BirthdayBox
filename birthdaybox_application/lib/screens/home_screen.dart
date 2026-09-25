@@ -5,16 +5,21 @@ import '../providers/theme_provider.dart';
 import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
+import '../widgets/birthday_card.dart';
+import '../widgets/countdown_card.dart';
+import '../widgets/custom_button.dart';
 import '../widgets/responsive_layout.dart';
+import '../widgets/stat_card.dart';
 
 /// Starter Foundation, Theme Showcase & Navigation Hub for BirthdayBox.
 /// Demonstrates:
-/// - Stateless & Stateful widgets (Lab 5a)
-/// - Row, Column & Card layouts (Lab 2b)
-/// - Responsive Breakpoints (Lab 3b)
-/// - Themes & Custom Styles without hardcoded screen colors (Lab 6b)
-/// - Global Theme Mode switching with Provider (Lab 5b)
-/// - Navigator & Named Routes (Lab 4a & 4b)
+/// - Reusable Custom Widgets: StatCard, BirthdayCard, CountdownCard, CustomButton (Lab Experiment 6a)
+/// - Stateless & Stateful widgets (Lab Experiment 5a)
+/// - Row, Column & Card layouts (Lab Experiment 2b)
+/// - Responsive Breakpoints (Lab Experiment 3b)
+/// - Themes & Custom Styles without hardcoded screen colors (Lab Experiment 6b)
+/// - Global Theme Mode switching with Provider (Lab Experiment 5b)
+/// - Navigator & Named Routes (Lab Experiment 4a & 4b)
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -25,6 +30,7 @@ class HomeScreen extends StatelessWidget {
     final isDark = themeProvider.isDarkMode;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final upcomingList = birthdayProvider.upcomingBirthdays;
 
     // Determine current layout mode based on responsive breakpoints
     String layoutMode = 'Mobile (<600px)';
@@ -111,61 +117,80 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Statistics summary cards (Row + Expanded)
+              // Reusable StatCard widgets in Row
               Row(
                 children: [
                   Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Text('🎂', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${birthdayProvider.totalCount}',
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                color: colorScheme.primary,
-                              ),
-                            ),
-                            Text(
-                              'Total Birthdays',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: StatCard(
+                      icon: '🎂',
+                      number: '${birthdayProvider.totalCount}',
+                      label: 'Total Birthdays',
+                      accentColor: colorScheme.primary,
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          children: [
-                            const Text('⏳', style: TextStyle(fontSize: 28)),
-                            const SizedBox(height: 6),
-                            Text(
-                              '${birthdayProvider.upcomingThisMonthCount}',
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                color: colorScheme.secondary,
-                              ),
-                            ),
-                            Text(
-                              'Upcoming (30d)',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                    child: StatCard(
+                      icon: '⏳',
+                      number: '${birthdayProvider.upcomingThisMonthCount}',
+                      label: 'Upcoming (30d)',
+                      accentColor: colorScheme.secondary,
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
                     ),
                   ),
                 ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Reusable CountdownCard widget highlighting closest upcoming birthday
+              if (upcomingList.isNotEmpty) ...[
+                CountdownCard(
+                  birthday: upcomingList.first,
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Reusable BirthdayCard preview
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.cake_outlined, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Upcoming Birthdays (BirthdayCard Widget)',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      ...upcomingList.take(2).map((birthday) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8.0),
+                            child: BirthdayCard(
+                              birthday: birthday,
+                              onTap: () => Navigator.pushNamed(
+                                context,
+                                AppRoutes.birthdayDetails,
+                              ),
+                            ),
+                          )),
+                      const SizedBox(height: 8),
+                      CustomButton(
+                        onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+                        text: 'View All Birthdays',
+                        icon: Icons.list_alt,
+                        isOutlined: true,
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
               const SizedBox(height: 16),
@@ -301,34 +326,25 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 16),
 
-                      // Reusable input decoration preview
-                      const TextField(
-                        decoration: InputDecoration(
-                          labelText: 'Sample Birthday Reminder Input',
-                          hintText: 'Enter name or notes...',
-                          prefixIcon: Icon(Icons.cake_outlined),
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
                       // Reusable Button styles preview
                       Row(
                         children: [
                           Expanded(
-                            child: ElevatedButton.icon(
+                            child: CustomButton(
                               onPressed: () {
                                 themeProvider.toggleTheme(!isDark);
                               },
-                              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                              label: Text(isDark ? 'Switch to Light' : 'Switch to Dark'),
+                              icon: isDark ? Icons.light_mode : Icons.dark_mode,
+                              text: isDark ? 'Light Theme' : 'Dark Theme',
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: OutlinedButton(
+                            child: CustomButton(
                               onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
-                              child: const Text('View Birthdays'),
+                              text: 'All Birthdays',
+                              icon: Icons.cake,
+                              isOutlined: true,
                             ),
                           ),
                         ],
