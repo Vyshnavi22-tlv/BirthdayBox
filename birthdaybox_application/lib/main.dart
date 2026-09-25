@@ -35,7 +35,7 @@ class BirthdayBoxApp extends StatelessWidget {
           theme: AppTheme.lightTheme,
           darkTheme: AppTheme.darkTheme,
           themeMode: themeProvider.themeMode,
-          initialRoute: AppRoutes.home,
+          initialRoute: AppRoutes.splash,
           routes: AppRoutes.routes,
           onGenerateRoute: AppRoutes.onGenerateRoute,
         );

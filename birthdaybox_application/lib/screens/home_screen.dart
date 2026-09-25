@@ -200,6 +200,11 @@ class HomeScreen extends StatelessWidget {
                         runSpacing: 10,
                         children: [
                           ActionChip(
+                            avatar: const Icon(Icons.flash_on, size: 18),
+                            label: const Text('/splash'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.splash),
+                          ),
+                          ActionChip(
                             avatar: const Icon(Icons.cake, size: 18),
                             label: const Text('/birthdays'),
                             onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),

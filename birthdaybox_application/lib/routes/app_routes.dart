@@ -7,15 +7,17 @@ import '../screens/home_screen.dart';
 import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../screens/signup_screen.dart';
+import '../screens/splash_screen.dart';
 
 /// AppRoutes defines named route constants and page route generation.
 /// Demonstrates Named Routes & Navigation (Lab Experiments 4a & 4b).
 class AppRoutes {
   // Named route paths
   static const String root = '/';
-  static const String home = '/home';
+  static const String splash = '/splash';
   static const String login = '/login';
   static const String signup = '/signup';
+  static const String home = '/home';
   static const String birthdays = '/birthdays';
   static const String addBirthday = '/add-birthday';
   static const String birthdayDetails = '/birthday-details';
@@ -24,10 +26,11 @@ class AppRoutes {
 
   /// Centralized route map for MaterialApp
   static Map<String, WidgetBuilder> get routes => {
-        root: (_) => const HomeScreen(),
-        home: (_) => const HomeScreen(),
+        root: (_) => const SplashScreen(),
+        splash: (_) => const SplashScreen(),
         login: (_) => const LoginScreen(),
         signup: (_) => const SignupScreen(),
+        home: (_) => const HomeScreen(),
         birthdays: (_) => const BirthdaysScreen(),
         addBirthday: (_) => const AddBirthdayScreen(),
         birthdayDetails: (_) => const BirthdayDetailsScreen(),
