@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/birthday_provider.dart';
 import '../providers/theme_provider.dart';
+import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 import '../widgets/responsive_layout.dart';
 
-/// Starter Foundation Screen for BirthdayBox.
+/// Starter Foundation & Theme Showcase Screen for BirthdayBox.
 /// Demonstrates:
 /// - Stateless & Stateful widgets (Lab 5a)
 /// - Row, Column & Card layouts (Lab 2b)
 /// - Responsive Breakpoints (Lab 3b)
-/// - Theme & State Management using Provider (Lab 5b & 6b)
+/// - Themes & Custom Styles without hardcoded screen colors (Lab 6b)
+/// - Global Theme Mode switching with Provider (Lab 5b)
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -19,8 +21,10 @@ class HomeScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final birthdayProvider = Provider.of<BirthdayProvider>(context);
     final isDark = themeProvider.isDarkMode(context);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
-    // Determine current layout device type for demonstration
+    // Determine current layout mode based on responsive breakpoints
     String layoutMode = 'Mobile (<600px)';
     if (ResponsiveLayout.isDesktop(context)) {
       layoutMode = 'Desktop (≥1024px)';
@@ -51,9 +55,9 @@ class HomeScreen extends StatelessWidget {
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 800),
           child: ListView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
-              // Welcome header card
+              // Welcome header card with theme-aware styling
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -62,25 +66,34 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Text(
                         'Welcome to ${AppConstants.appName}! 🎉',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: theme.textTheme.headlineSmall,
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 6),
                       Text(
                         AppConstants.appTagline,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey,
-                            ),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                      const Divider(height: 24),
+                      const Divider(),
                       Row(
                         children: [
-                          const Icon(Icons.devices, size: 20, color: Colors.blueAccent),
+                          Icon(
+                            Icons.devices,
+                            size: 20,
+                            color: colorScheme.primary,
+                          ),
                           const SizedBox(width: 8),
                           Text(
                             'Active Layout: $layoutMode',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
+                            style: theme.textTheme.titleSmall,
+                          ),
+                          const Spacer(),
+                          Text(
+                            isDark ? '🌙 Dark Theme' : '☀️ Light Theme',
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              color: colorScheme.secondary,
+                            ),
                           ),
                         ],
                       ),
@@ -91,7 +104,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Foundation status and statistics summary
+              // Statistics summary cards (Row + Expanded)
               Row(
                 children: [
                   Expanded(
@@ -104,11 +117,16 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               '${birthdayProvider.totalCount}',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: colorScheme.primary,
+                              ),
                             ),
-                            const Text('Total Birthdays', style: TextStyle(color: Colors.grey)),
+                            Text(
+                              'Total Birthdays',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -125,11 +143,16 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 6),
                             Text(
                               '${birthdayProvider.upcomingThisMonthCount}',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: colorScheme.secondary,
+                              ),
                             ),
-                            const Text('Upcoming (30d)', style: TextStyle(color: Colors.grey)),
+                            Text(
+                              'Upcoming (30d)',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
@@ -140,7 +163,7 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
-              // Foundation check card
+              // Theme System Showcase Card (demonstrates requirements)
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -149,19 +172,81 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          const Icon(Icons.check_circle, color: Colors.green),
+                          Icon(Icons.palette_outlined, color: colorScheme.primary),
                           const SizedBox(width: 8),
                           Text(
-                            'Project Foundation Ready',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                            'Theme System & Styling Components',
+                            style: theme.textTheme.titleMedium,
                           ),
                         ],
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'The clean folder architecture and foundational state providers (ThemeProvider & BirthdayProvider) are set up and running successfully.',
+                      Text(
+                        'All components automatically adapt between Light & Dark themes without hardcoded screen colors:',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Relationship category chips preview
+                      Text('Relationship Tags:', style: theme.textTheme.labelMedium),
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: AppConstants.relationshipCategories.map((category) {
+                          final categoryColor = AppTheme.getRelationshipColor(category);
+                          return Chip(
+                            backgroundColor: categoryColor.withValues(alpha: 0.15),
+                            side: BorderSide(
+                              color: categoryColor.withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                            label: Text(
+                              category,
+                              style: TextStyle(
+                                color: categoryColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Reusable input decoration preview
+                      const TextField(
+                        decoration: InputDecoration(
+                          labelText: 'Sample Birthday Reminder Input',
+                          hintText: 'Enter name or notes...',
+                          prefixIcon: Icon(Icons.cake_outlined),
+                        ),
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Reusable Button styles preview
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                themeProvider.toggleTheme(!isDark);
+                              },
+                              icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+                              label: Text(isDark ? 'Switch to Light' : 'Switch to Dark'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {},
+                              child: const Text('Outlined Action'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
