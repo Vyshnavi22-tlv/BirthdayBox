@@ -1,42 +1,63 @@
 import 'package:flutter/foundation.dart';
 import '../models/birthday.dart';
 
-/// BirthdayProvider manages the list of birthdays and handles CRUD operations.
-/// Demonstrates State Management with Provider (Lab Experiment 5b).
+/// BirthdayProvider manages the state of the birthday list across the application.
+/// Demonstrates State Management with Provider & ChangeNotifier (Lab Experiment 5b).
+///
+/// Implements:
+/// - get birthdays
+/// - addBirthday()
+/// - updateBirthday()
+/// - deleteBirthday()
+/// - get upcoming birthdays
+/// - get today's birthdays
+/// - get this month's birthdays
+/// - get total birthday count
 class BirthdayProvider extends ChangeNotifier {
-  // Initialized with sample birthdays for development and testing
+  // Initialized with existing sample birthday data for development and testing
   final List<Birthday> _birthdays = List.from(Birthday.sampleBirthdays);
 
-  /// Unmodifiable view of all birthdays
+  /// 1. get birthdays: Returns an unmodifiable list of all stored birthdays
   List<Birthday> get birthdays => List.unmodifiable(_birthdays);
 
-  /// Total number of birthdays saved
-  int get totalCount => _birthdays.length;
+  /// 2. get total birthday count: Total count of all birthdays
+  int get totalBirthdayCount => _birthdays.length;
+  int get totalBirthdays => totalBirthdayCount;
+  int get totalCount => totalBirthdayCount;
 
-  /// Birthdays occurring today
+  /// 3. get today's birthdays: List of birthdays occurring today
   List<Birthday> get todayBirthdays {
     return _birthdays.where((b) => b.isToday).toList();
   }
+  List<Birthday> get todaysBirthdays => todayBirthdays;
 
-  /// Upcoming birthdays sorted by nearest upcoming date
+  /// 4. get upcoming birthdays: Sorted chronologically by days remaining
   List<Birthday> get upcomingBirthdays {
     final list = List<Birthday>.from(_birthdays);
     list.sort((a, b) => a.daysRemaining.compareTo(b.daysRemaining));
     return list;
   }
 
-  /// Count of birthdays in the next 30 days
-  int get upcomingThisMonthCount {
-    return _birthdays.where((b) => b.daysRemaining <= 30).length;
+  /// 5. get this month's birthdays: Birthdays occurring in the current calendar month
+  List<Birthday> get thisMonthsBirthdays {
+    final currentMonth = DateTime.now().month;
+    return _birthdays.where((b) => b.dateOfBirth.month == currentMonth).toList();
   }
+  int get thisMonthsBirthdayCount => thisMonthsBirthdays.length;
 
-  /// Add a new birthday
+  /// Helper for 30-day upcoming countdown
+  List<Birthday> get next30DaysBirthdays {
+    return _birthdays.where((b) => b.daysRemaining <= 30).toList();
+  }
+  int get upcomingThisMonthCount => next30DaysBirthdays.length;
+
+  /// 6. addBirthday(): Adds a new birthday and notifies listeners
   void addBirthday(Birthday birthday) {
     _birthdays.add(birthday);
     notifyListeners();
   }
 
-  /// Update an existing birthday entry
+  /// 7. updateBirthday(): Updates an existing birthday and notifies listeners
   void updateBirthday(Birthday updated) {
     final index = _birthdays.indexWhere((b) => b.id == updated.id);
     if (index != -1) {
@@ -45,13 +66,16 @@ class BirthdayProvider extends ChangeNotifier {
     }
   }
 
-  /// Remove a birthday entry by ID
+  /// 8. deleteBirthday(): Deletes a birthday by ID and notifies listeners
   void deleteBirthday(String id) {
+    final initialLength = _birthdays.length;
     _birthdays.removeWhere((b) => b.id == id);
-    notifyListeners();
+    if (_birthdays.length != initialLength) {
+      notifyListeners();
+    }
   }
 
-  /// Find a birthday by ID
+  /// Helper: Look up a birthday by ID
   Birthday? findById(String id) {
     try {
       return _birthdays.firstWhere((b) => b.id == id);
