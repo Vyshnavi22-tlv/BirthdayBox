@@ -38,6 +38,8 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
   late final TextEditingController _notesController;
 
   // Local form/UI state (managed via setState)
+  Birthday? _effectiveBirthday;
+  bool _routeArgsChecked = false;
   String _selectedEmoji = '🎂';
   DateTime? _selectedDate;
   String? _selectedRelationship;
@@ -45,7 +47,8 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
   @override
   void initState() {
     super.initState();
-    final b = widget.existingBirthday;
+    _effectiveBirthday = widget.existingBirthday;
+    final b = _effectiveBirthday;
     _nameController = TextEditingController(text: b?.name ?? '');
     _phoneController = TextEditingController(text: b?.phone ?? '');
     _notesController = TextEditingController(text: b?.notes ?? '');
@@ -57,6 +60,29 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
       _dateController = TextEditingController(text: b.formattedFullDate);
     } else {
       _dateController = TextEditingController();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_routeArgsChecked) {
+      _routeArgsChecked = true;
+      if (_effectiveBirthday == null) {
+        final routeArg = ModalRoute.of(context)?.settings.arguments;
+        if (routeArg is Birthday) {
+          setState(() {
+            _effectiveBirthday = routeArg;
+            _nameController.text = routeArg.name;
+            _phoneController.text = routeArg.phone;
+            _notesController.text = routeArg.notes;
+            _selectedDate = routeArg.dateOfBirth;
+            _selectedEmoji = routeArg.imagePath.isNotEmpty ? routeArg.imagePath : '🎂';
+            _selectedRelationship = routeArg.relationship;
+            _dateController.text = routeArg.formattedFullDate;
+          });
+        }
+      }
     }
   }
 
@@ -176,9 +202,11 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
     final primaryColor = Theme.of(context).colorScheme.primary;
     final nav = Navigator.of(context);
 
+    final isEditing = _effectiveBirthday != null;
+
     // 2. Create or update Birthday object
     final birthday = Birthday(
-      id: widget.existingBirthday?.id ??
+      id: _effectiveBirthday?.id ??
           'bday-${DateTime.now().millisecondsSinceEpoch}',
       name: _nameController.text.trim(),
       dateOfBirth: _selectedDate!,
@@ -189,7 +217,7 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
     );
 
     // 3. Update state via BirthdayProvider
-    if (widget.existingBirthday != null) {
+    if (isEditing) {
       birthdayProvider.updateBirthday(birthday);
     } else {
       birthdayProvider.addBirthday(birthday);
@@ -198,7 +226,11 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
     // 4. Show success feedback
     messenger.showSnackBar(
       SnackBar(
-        content: Text('🎉 ${birthday.name}’s birthday saved successfully!'),
+        content: Text(
+          isEditing
+              ? '🎉 ${birthday.name}’s birthday updated successfully!'
+              : '🎉 ${birthday.name}’s birthday saved successfully!',
+        ),
         behavior: SnackBarBehavior.floating,
         backgroundColor: primaryColor,
         duration: const Duration(seconds: 3),
@@ -215,7 +247,7 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final isEditing = widget.existingBirthday != null;
+    final isEditing = _effectiveBirthday != null;
 
     return Scaffold(
       appBar: AppBar(
@@ -293,6 +325,7 @@ class _AddBirthdayScreenState extends State<AddBirthdayScreen> {
 
                       // 4. Relationship Dropdown (Required)
                       DropdownButtonFormField<String>(
+                        key: ValueKey(_effectiveBirthday?.id ?? 'new'),
                         initialValue: _selectedRelationship,
                         isExpanded: true,
                         decoration: const InputDecoration(

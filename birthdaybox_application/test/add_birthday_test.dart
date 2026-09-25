@@ -9,7 +9,10 @@ import 'package:birthdaybox_application/widgets/custom_button.dart';
 
 void main() {
   group('AddBirthdayScreen Tests (Lab 7a & 7b Forms & Validation, Lab 5b Provider)', () {
-    Widget buildTestWidget({BirthdayProvider? birthdayProvider}) {
+    Widget buildTestWidget({
+      BirthdayProvider? birthdayProvider,
+      Birthday? existingBirthday,
+    }) {
       return MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => ThemeProvider()),
@@ -17,8 +20,8 @@ void main() {
             value: birthdayProvider ?? BirthdayProvider(),
           ),
         ],
-        child: const MaterialApp(
-          home: AddBirthdayScreen(),
+        child: MaterialApp(
+          home: AddBirthdayScreen(existingBirthday: existingBirthday),
         ),
       );
     }
@@ -223,6 +226,96 @@ void main() {
       expect(find.text('Add Birthday'), findsOneWidget);
 
       tester.view.resetPhysicalSize();
+    });
+
+    testWidgets('Edit Mode: Pre-fills all existing values and avatar cleanly',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final existing = Birthday(
+        id: 'edit-1',
+        name: 'Kavita Menon',
+        dateOfBirth: DateTime(1996, 4, 18),
+        relationship: 'Family',
+        phone: '9876512345',
+        notes: 'Loves hand-poured lavender candles',
+        imagePath: '🌸',
+      );
+
+      await tester.pumpWidget(buildTestWidget(existingBirthday: existing));
+      await tester.pumpAndSettle();
+
+      // Header and titles for edit mode
+      expect(find.text('Edit Birthday'), findsOneWidget);
+      expect(find.text('Update Celebration'), findsOneWidget);
+      expect(find.text('Update Birthday'), findsOneWidget);
+
+      // Pre-filled values in text form fields
+      expect(find.widgetWithText(TextFormField, 'Kavita Menon'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '18 April 1996'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, '9876512345'), findsOneWidget);
+      expect(find.widgetWithText(TextFormField, 'Loves hand-poured lavender candles'), findsOneWidget);
+
+      // Selected avatar emoji
+      expect(find.text('🌸'), findsWidgets);
+    });
+
+    testWidgets('Edit Mode: Saves updated values via BirthdayProvider and shows SnackBar',
+        (WidgetTester tester) async {
+      tester.view.physicalSize = const Size(800, 1200);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() => tester.view.resetPhysicalSize());
+
+      final provider = BirthdayProvider();
+      final existing = Birthday(
+        id: 'edit-2',
+        name: 'Sameer Verma',
+        dateOfBirth: DateTime(1998, 9, 10),
+        relationship: 'Friend',
+        phone: '9845012345',
+        notes: 'Fond of specialty tea blends',
+        imagePath: '☕',
+      );
+      provider.addBirthday(existing);
+      final countBefore = provider.totalBirthdayCount;
+
+      await tester.pumpWidget(
+        buildTestWidget(
+          birthdayProvider: provider,
+          existingBirthday: existing,
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      // Modify the name and notes
+      final nameField = find.widgetWithText(TextFormField, 'Sameer Verma');
+      await tester.enterText(nameField, 'Sameer V. Sharma');
+
+      final notesField = find.widgetWithText(TextFormField, 'Fond of specialty tea blends');
+      await tester.enterText(notesField, 'Prefers Earl Grey and Japanese Matcha');
+
+      // Tap Update Birthday
+      final updateBtn = find.widgetWithText(CustomButton, 'Update Birthday');
+      await tester.ensureVisible(updateBtn);
+      await tester.tap(updateBtn);
+      await tester.pumpAndSettle();
+
+      // Total count stays the same (no duplicates created)
+      expect(provider.totalBirthdayCount, countBefore);
+
+      // Provider record has the updated values
+      final updated = provider.findById('edit-2');
+      expect(updated, isNotNull);
+      expect(updated!.name, 'Sameer V. Sharma');
+      expect(updated.notes, 'Prefers Earl Grey and Japanese Matcha');
+
+      // Shows update success snackbar
+      expect(
+        find.text('🎉 Sameer V. Sharma’s birthday updated successfully!'),
+        findsOneWidget,
+      );
     });
   });
 }
