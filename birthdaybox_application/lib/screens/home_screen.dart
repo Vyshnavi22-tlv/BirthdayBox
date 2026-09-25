@@ -2,17 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/birthday_provider.dart';
 import '../providers/theme_provider.dart';
+import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 import '../widgets/responsive_layout.dart';
 
-/// Starter Foundation & Theme Showcase Screen for BirthdayBox.
+/// Starter Foundation, Theme Showcase & Navigation Hub for BirthdayBox.
 /// Demonstrates:
 /// - Stateless & Stateful widgets (Lab 5a)
 /// - Row, Column & Card layouts (Lab 2b)
 /// - Responsive Breakpoints (Lab 3b)
 /// - Themes & Custom Styles without hardcoded screen colors (Lab 6b)
 /// - Global Theme Mode switching with Provider (Lab 5b)
+/// - Navigator & Named Routes (Lab 4a & 4b)
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -41,6 +43,11 @@ class HomeScreen extends StatelessWidget {
           ],
         ),
         actions: [
+          IconButton(
+            tooltip: 'Profile & Settings',
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+          ),
           IconButton(
             tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
             icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
@@ -163,6 +170,79 @@ class HomeScreen extends StatelessWidget {
 
               const SizedBox(height: 16),
 
+              // Named Routes Navigation Hub (Lab 4a & 4b)
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.alt_route, color: colorScheme.primary),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Named Routes Navigation (Lab 4a & 4b)',
+                            style: theme.textTheme.titleMedium,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Tap any route below to test seamless named route transitions:',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 10,
+                        runSpacing: 10,
+                        children: [
+                          ActionChip(
+                            avatar: const Icon(Icons.cake, size: 18),
+                            label: const Text('/birthdays'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.add, size: 18),
+                            label: const Text('/add-birthday'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.addBirthday),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.info_outline, size: 18),
+                            label: const Text('/birthday-details'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdayDetails),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.calendar_month, size: 18),
+                            label: const Text('/calendar'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.calendar),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.person, size: 18),
+                            label: const Text('/profile'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.login, size: 18),
+                            label: const Text('/login'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.login),
+                          ),
+                          ActionChip(
+                            avatar: const Icon(Icons.person_add, size: 18),
+                            label: const Text('/signup'),
+                            onPressed: () => Navigator.pushNamed(context, AppRoutes.signup),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
               // Theme System Showcase Card (demonstrates requirements)
               Card(
                 child: Padding(
@@ -242,8 +322,8 @@ class HomeScreen extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () {},
-                              child: const Text('Outlined Action'),
+                              onPressed: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+                              child: const Text('View Birthdays'),
                             ),
                           ),
                         ],
