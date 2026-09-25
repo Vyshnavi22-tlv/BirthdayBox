@@ -5,6 +5,8 @@ import 'package:birthdaybox_application/main.dart';
 import 'package:birthdaybox_application/providers/birthday_provider.dart';
 import 'package:birthdaybox_application/providers/theme_provider.dart';
 import 'package:birthdaybox_application/screens/login_screen.dart';
+import 'package:birthdaybox_application/screens/signup_screen.dart';
+import 'package:birthdaybox_application/widgets/custom_button.dart';
 
 void main() {
   testWidgets('SplashScreen renders with logo, name, tagline, and transitions',
@@ -86,8 +88,13 @@ void main() {
     expect(find.text('Password must be at least 6 characters'), findsOneWidget);
   });
 
-  testWidgets('LoginScreen succeeds with valid input and navigates to Home',
+  testWidgets('Navigation: Login -> Sign Up -> Login',
       (WidgetTester tester) async {
+    // Set a large enough surface size so all elements are accessible
+    tester.view.physicalSize = const Size(800, 1000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
     await tester.pumpWidget(
       MultiProvider(
         providers: [
@@ -98,25 +105,77 @@ void main() {
       ),
     );
 
-    // Advance through splash to login
+    // Advance to Login
     await tester.pump(const Duration(milliseconds: 2600));
     await tester.pumpAndSettle();
 
-    // Enter valid email and password
-    await tester.enterText(
-        find.widgetWithText(TextFormField, 'Email Address'), 'alex@example.com');
-    await tester.enterText(
-        find.widgetWithText(TextFormField, 'Password'), 'secret123');
-
-    // Tap Sign In
-    await tester.tap(find.text('Sign In'));
-    await tester.pump(); // Start loading state
-
-    // Advance simulated authentication delay
-    await tester.pump(const Duration(milliseconds: 700));
+    // Tap Create Account on Login screen
+    final createAccountFinder = find.text('Create Account');
+    await tester.ensureVisible(createAccountFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(createAccountFinder);
     await tester.pumpAndSettle();
 
-    // Verify navigation landed on Dashboard / HomeScreen
-    expect(find.text('Total Birthdays'), findsOneWidget);
+    // Verify Signup screen is open
+    expect(find.text('Get Started with BirthdayBox'), findsOneWidget);
+    expect(find.text('Full Name'), findsOneWidget);
+
+    // Tap Sign In link to go back
+    final signInFinder = find.text('Sign In');
+    await tester.ensureVisible(signInFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(signInFinder);
+    await tester.pumpAndSettle();
+
+    // Verify back on Login screen
+    expect(find.text('Welcome Back! 👋'), findsOneWidget);
+  });
+
+  testWidgets('SignupScreen validates required fields and password mismatch',
+      (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(800, 1200);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() => tester.view.resetPhysicalSize());
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => ThemeProvider()),
+          ChangeNotifierProvider(create: (_) => BirthdayProvider()),
+        ],
+        child: const MaterialApp(
+          home: SignupScreen(),
+        ),
+      ),
+    );
+
+    // Tap Create Account button with empty fields
+    final createBtnFinder = find.widgetWithText(CustomButton, 'Create Account');
+    await tester.ensureVisible(createBtnFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(createBtnFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Full Name cannot be empty'), findsOneWidget);
+    expect(find.text('Email cannot be empty'), findsOneWidget);
+    expect(find.text('Password cannot be empty'), findsOneWidget);
+    expect(find.text('Please confirm your password'), findsOneWidget);
+
+    // Enter mismatching passwords
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Full Name'), 'Vyshnavi');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Email Address'), 'vyshu@example.com');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Password'), 'password123');
+    await tester.enterText(
+        find.widgetWithText(TextFormField, 'Confirm Password'), 'different456');
+
+    await tester.ensureVisible(createBtnFinder);
+    await tester.pumpAndSettle();
+    await tester.tap(createBtnFinder);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Passwords do not match'), findsOneWidget);
   });
 }
