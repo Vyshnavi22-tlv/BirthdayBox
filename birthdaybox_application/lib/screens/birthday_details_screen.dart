@@ -120,7 +120,7 @@ class BirthdayDetailsScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.person_off_outlined, size: 64, color: Colors.grey),
+                Icon(Icons.person_off_outlined, size: 64, color: colorScheme.outline),
                 const SizedBox(height: 16),
                 Text('Birthday Not Found', style: theme.textTheme.headlineSmall),
                 const SizedBox(height: 8),

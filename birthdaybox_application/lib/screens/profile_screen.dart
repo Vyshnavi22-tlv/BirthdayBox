@@ -232,11 +232,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
       builder: (dialogCtx) {
         final theme = Theme.of(dialogCtx);
         return AlertDialog(
-          title: const Row(
+          title: Row(
             children: [
-              Icon(Icons.logout, color: Colors.redAccent),
-              SizedBox(width: 10),
-              Text('Log Out'),
+              Icon(Icons.logout, color: theme.colorScheme.error),
+              const SizedBox(width: 10),
+              const Text('Log Out'),
             ],
           ),
           content: const Text(

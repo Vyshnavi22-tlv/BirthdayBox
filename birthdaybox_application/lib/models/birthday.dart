@@ -62,7 +62,9 @@ class Birthday {
   int get daysRemaining {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    return nextBirthday.difference(today).inDays;
+    final diffMillis = nextBirthday.difference(today).inMilliseconds;
+    final days = (diffMillis / (1000 * 60 * 60 * 24)).round();
+    return days >= 0 ? days : 0;
   }
 
   // Backward compatibility alias for days remaining
@@ -71,7 +73,10 @@ class Birthday {
   /// Helper: Determines whether today is the person's birthday.
   bool get isToday {
     final now = DateTime.now();
-    return dateOfBirth.month == now.month && dateOfBirth.day == now.day;
+    final today = DateTime(now.year, now.month, now.day);
+    return nextBirthday.year == today.year &&
+        nextBirthday.month == today.month &&
+        nextBirthday.day == today.day;
   }
 
   /// Helper: Calculates the person's current age.
