@@ -279,7 +279,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           IconButton(
             tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            icon: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => RotationTransition(
+                turns: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Icon(
+                isDark ? Icons.light_mode : Icons.dark_mode,
+                key: ValueKey(isDark),
+              ),
+            ),
             onPressed: () => themeProvider.toggleTheme(!isDark),
           ),
           IconButton(
@@ -730,43 +740,75 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: !isDark
-                          ? colorScheme.primary.withValues(alpha: 0.12)
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: !isDark
+                          ? [
+                              BoxShadow(
+                                color: colorScheme.primary.withValues(alpha: 0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
                           : null,
-                      side: BorderSide(
-                        color: !isDark ? colorScheme.primary : colorScheme.outline,
-                        width: !isDark ? 2 : 1,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                     ),
-                    onPressed: () => themeProvider.setDarkMode(false),
-                    icon: const Icon(Icons.wb_sunny_outlined, size: 16),
-                    label: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('Light Mode'),
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: !isDark
+                            ? colorScheme.primary.withValues(alpha: 0.12)
+                            : null,
+                        side: BorderSide(
+                          color: !isDark ? colorScheme.primary : colorScheme.outline,
+                          width: !isDark ? 2 : 1,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+                      ),
+                      onPressed: () => themeProvider.setDarkMode(false),
+                      icon: const Icon(Icons.wb_sunny_outlined, size: 16),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Light Mode'),
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: OutlinedButton.icon(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: isDark
-                          ? colorScheme.primary.withValues(alpha: 0.12)
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeInOut,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: isDark
+                          ? [
+                              BoxShadow(
+                                color: colorScheme.primary.withValues(alpha: 0.2),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
                           : null,
-                      side: BorderSide(
-                        color: isDark ? colorScheme.primary : colorScheme.outline,
-                        width: isDark ? 2 : 1,
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                     ),
-                    onPressed: () => themeProvider.setDarkMode(true),
-                    icon: const Icon(Icons.nightlight_round, size: 16),
-                    label: const FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text('Dark Mode'),
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: isDark
+                            ? colorScheme.primary.withValues(alpha: 0.12)
+                            : null,
+                        side: BorderSide(
+                          color: isDark ? colorScheme.primary : colorScheme.outline,
+                          width: isDark ? 2 : 1,
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
+                      ),
+                      onPressed: () => themeProvider.setDarkMode(true),
+                      icon: const Icon(Icons.nightlight_round, size: 16),
+                      label: const FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text('Dark Mode'),
+                      ),
                     ),
                   ),
                 ),

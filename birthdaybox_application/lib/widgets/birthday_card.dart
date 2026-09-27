@@ -7,11 +7,13 @@ import '../theme/app_theme.dart';
 /// - Custom Widgets (Lab Experiment 6a)
 /// - Row, Column & Stack composition (Lab Experiment 2b)
 /// - Themes & Dynamic Category Colors (Lab Experiment 6b)
-class BirthdayCard extends StatelessWidget {
+/// - Flutter Animation framework with AnimationController, SlideTransition, and FadeTransition
+class BirthdayCard extends StatefulWidget {
   final BirthdayModel birthday;
   final VoidCallback? onTap;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
+  final bool animate;
 
   const BirthdayCard({
     super.key,
@@ -19,10 +21,61 @@ class BirthdayCard extends StatelessWidget {
     this.onTap,
     this.onEdit,
     this.onDelete,
+    this.animate = true,
   });
 
   @override
+  State<BirthdayCard> createState() => _BirthdayCardState();
+}
+
+class _BirthdayCardState extends State<BirthdayCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<Offset> _slideAnimation;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 350),
+    );
+
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.0, 0.08),
+      end: Offset.zero,
+    ).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeOutCubic,
+      ),
+    );
+
+    _fadeAnimation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    );
+
+    if (widget.animate) {
+      _animationController.forward();
+    } else {
+      _animationController.value = 1.0;
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final birthday = widget.birthday;
+    final onTap = widget.onTap;
+    final onEdit = widget.onEdit;
+    final onDelete = widget.onDelete;
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final relationshipColor = AppTheme.getRelationshipColor(birthday.relationship);
@@ -44,7 +97,7 @@ class BirthdayCard extends StatelessWidget {
       badgeColor = days <= 30 ? colorScheme.primary : colorScheme.onSurfaceVariant;
     }
 
-    return Card(
+    final cardContent = Card(
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -197,6 +250,18 @@ class BirthdayCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+
+    if (!widget.animate) {
+      return cardContent;
+    }
+
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: cardContent,
       ),
     );
   }

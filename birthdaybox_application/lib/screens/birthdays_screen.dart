@@ -376,49 +376,67 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
     final colorScheme = theme.colorScheme;
     final chipColor = categoryColor ?? colorScheme.primary;
 
-    return FilterChip(
-      selected: isSelected,
-      showCheckmark: false,
-      label: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (categoryColor != null) ...[
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: isSelected ? Colors.white : categoryColor,
-                shape: BoxShape.circle,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: chipColor.withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ]
+            : null,
+      ),
+      child: FilterChip(
+        selected: isSelected,
+        showCheckmark: false,
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (categoryColor != null) ...[
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOut,
+                width: isSelected ? 9 : 8,
+                height: isSelected ? 9 : 8,
+                decoration: BoxDecoration(
+                  color: isSelected ? Colors.white : categoryColor,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+            ],
+            Text(category),
+            const SizedBox(width: 4),
+            Text(
+              '($count)',
+              style: TextStyle(
+                fontSize: 11,
+                color: isSelected ? Colors.white.withValues(alpha: 0.9) : colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(width: 6),
           ],
-          Text(category),
-          const SizedBox(width: 4),
-          Text(
-            '($count)',
-            style: TextStyle(
-              fontSize: 11,
-              color: isSelected ? Colors.white.withValues(alpha: 0.9) : colorScheme.onSurfaceVariant,
-            ),
+        ),
+        onSelected: (_) {
+          setState(() {
+            _selectedCategory = category;
+          });
+        },
+        selectedColor: chipColor,
+        labelStyle: TextStyle(
+          color: isSelected ? Colors.white : colorScheme.onSurface,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+        ),
+        backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(
+            color: isSelected ? chipColor : colorScheme.outline.withValues(alpha: 0.2),
           ),
-        ],
-      ),
-      onSelected: (_) {
-        setState(() {
-          _selectedCategory = category;
-        });
-      },
-      selectedColor: chipColor,
-      labelStyle: TextStyle(
-        color: isSelected ? Colors.white : colorScheme.onSurface,
-        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-      ),
-      backgroundColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-        side: BorderSide(
-          color: isSelected ? chipColor : colorScheme.outline.withValues(alpha: 0.2),
         ),
       ),
     );

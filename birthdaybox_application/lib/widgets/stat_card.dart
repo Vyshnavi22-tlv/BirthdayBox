@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// StatCard displays a summary metric on the dashboard.
-/// Demonstrates Custom Widgets (Lab Experiment 6a) & Row/Column layouts (Lab Experiment 2b).
+/// Demonstrates Custom Widgets (Lab Experiment 6a), Row/Column layouts (Lab Experiment 2b),
+/// and smooth AnimatedContainer & AnimatedSwitcher metric transitions.
 class StatCard extends StatelessWidget {
   final dynamic icon; // Can be an IconData, String (emoji), or Widget
   final String number;
@@ -41,7 +42,8 @@ class StatCard extends StatelessWidget {
     final colorScheme = theme.colorScheme;
     final color = accentColor ?? colorScheme.primary;
 
-    final content = Padding(
+    final content = AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 18.0),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -49,11 +51,19 @@ class StatCard extends StatelessWidget {
         children: [
           _buildIcon(context),
           const SizedBox(height: 8),
-          Text(
-            number,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: color,
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) => ScaleTransition(
+              scale: animation,
+              child: FadeTransition(opacity: animation, child: child),
+            ),
+            child: Text(
+              number,
+              key: ValueKey(number),
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
             ),
           ),
           const SizedBox(height: 4),

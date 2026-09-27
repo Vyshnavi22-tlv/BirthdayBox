@@ -68,6 +68,25 @@ class ResponsiveScaffold extends StatelessWidget {
     }
   }
 
+  /// Smooth animated theme switcher button with rotation and fade transition
+  static Widget buildThemeSwitchButton(ThemeProvider themeProvider, bool isDark) {
+    return IconButton(
+      tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+      icon: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) => RotationTransition(
+          turns: animation,
+          child: FadeTransition(opacity: animation, child: child),
+        ),
+        child: Icon(
+          isDark ? Icons.light_mode : Icons.dark_mode,
+          key: ValueKey(isDark),
+        ),
+      ),
+      onPressed: () => themeProvider.toggleTheme(!isDark),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -99,11 +118,7 @@ class ResponsiveScaffold extends StatelessWidget {
                       title: title,
                       actions: [
                         ...?actions,
-                        IconButton(
-                          tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                          icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                          onPressed: () => themeProvider.toggleTheme(!isDark),
-                        ),
+                        buildThemeSwitchButton(themeProvider, isDark),
                         IconButton(
                           tooltip: 'Profile',
                           icon: const Icon(Icons.person_outline),
@@ -166,11 +181,7 @@ class ResponsiveScaffold extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 16.0),
-                        child: IconButton(
-                          tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                          icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                          onPressed: () => themeProvider.toggleTheme(!isDark),
-                        ),
+                        child: buildThemeSwitchButton(themeProvider, isDark),
                       ),
                     ),
                   ),
@@ -219,11 +230,7 @@ class ResponsiveScaffold extends StatelessWidget {
                           icon: const Icon(Icons.person_outline),
                           onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
                         ),
-                        IconButton(
-                          tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                          icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                          onPressed: () => themeProvider.toggleTheme(!isDark),
-                        ),
+                        buildThemeSwitchButton(themeProvider, isDark),
                         ...?actions,
                         const SizedBox(width: 8),
                       ],
@@ -254,11 +261,7 @@ class ResponsiveScaffold extends StatelessWidget {
                 icon: const Icon(Icons.person_outline),
                 onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
               ),
-              IconButton(
-                tooltip: isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode',
-                icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
-                onPressed: () => themeProvider.toggleTheme(!isDark),
-              ),
+              buildThemeSwitchButton(themeProvider, isDark),
               ...?actions,
               const SizedBox(width: 8),
             ],
@@ -429,9 +432,17 @@ class _DesktopSidebar extends StatelessWidget {
 
           // Theme Switcher Tile (consistent in Light & Dark mode)
           ListTile(
-            leading: Icon(
-              isDark ? Icons.light_mode : Icons.dark_mode,
-              color: colorScheme.primary,
+            leading: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              transitionBuilder: (child, animation) => RotationTransition(
+                turns: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: Icon(
+                isDark ? Icons.light_mode : Icons.dark_mode,
+                key: ValueKey(isDark),
+                color: colorScheme.primary,
+              ),
             ),
             title: Text(isDark ? 'Light Mode' : 'Dark Mode'),
             onTap: onToggleTheme,
@@ -466,35 +477,48 @@ class _SidebarTile extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      child: ListTile(
-        shape: RoundedRectangleBorder(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
+          color: isSelected
+              ? colorScheme.primary.withValues(alpha: 0.12)
+              : Colors.transparent,
         ),
-        selected: isSelected,
-        selectedTileColor: colorScheme.primary.withValues(alpha: 0.12),
-        leading: Icon(
-          icon,
-          color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+        child: Material(
+          color: Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          child: ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            selected: isSelected,
+            leading: Icon(
+              icon,
+              color: isSelected ? colorScheme.primary : colorScheme.onSurfaceVariant,
+            ),
+            title: Text(
+              title,
+              style: TextStyle(
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                color: isSelected ? colorScheme.primary : colorScheme.onSurface,
+              ),
+            ),
+            subtitle: subtitle != null
+                ? Text(
+                    subtitle!,
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: isSelected
+                          ? colorScheme.primary
+                          : colorScheme.onSurfaceVariant,
+                    ),
+                  )
+                : null,
+            onTap: onTap,
           ),
         ),
-        subtitle: subtitle != null
-            ? Text(
-                subtitle!,
-                style: TextStyle(
-                  fontSize: 10,
-                  color: isSelected
-                      ? colorScheme.primary
-                      : colorScheme.onSurfaceVariant,
-                ),
-              )
-            : null,
-        onTap: onTap,
       ),
     );
   }

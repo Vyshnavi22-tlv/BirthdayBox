@@ -21,8 +21,37 @@ import '../widgets/stat_card.dart';
 /// - Desktop: Sidebar navigation + multi-column content + larger content area
 /// - State Management with BirthdayProvider & auto-updating UI (Lab Experiment 5b)
 /// - Custom Reusable Widgets (Lab Experiment 6a) & Theming without hardcoded colors (Lab Experiment 6b)
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 550),
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeOut,
+    );
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +65,9 @@ class DashboardScreen extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text('Add Birthday'),
       ),
-      body: ResponsiveLayout.builder(
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: ResponsiveLayout.builder(
         builder: (context, constraints, deviceType) {
           final upcomingList = birthdayProvider.upcomingBirthdays;
 
@@ -98,6 +129,7 @@ class DashboardScreen extends StatelessWidget {
             ],
           );
         },
+      ),
       ),
     );
   }
@@ -443,47 +475,119 @@ class _WelcomeBanner extends StatelessWidget {
 }
 
 /// Statistics Row (Total Birthdays, This Month, Today)
-class _DashboardStatisticsRow extends StatelessWidget {
+/// Demonstrates animated appearance for statistics cards using AnimationController,
+/// FadeTransition, and SlideTransition.
+class _DashboardStatisticsRow extends StatefulWidget {
   final BirthdayProvider birthdayProvider;
 
   const _DashboardStatisticsRow({required this.birthdayProvider});
 
   @override
+  State<_DashboardStatisticsRow> createState() => _DashboardStatisticsRowState();
+}
+
+class _DashboardStatisticsRowState extends State<_DashboardStatisticsRow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _statsController;
+  late final List<Animation<double>> _fadeAnimations;
+  late final List<Animation<Offset>> _slideAnimations;
+
+  @override
+  void initState() {
+    super.initState();
+    _statsController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    // Staggered appearance for the 3 statistics cards
+    _fadeAnimations = List.generate(3, (index) {
+      final start = index * 0.15;
+      final end = (start + 0.6).clamp(0.0, 1.0);
+      return CurvedAnimation(
+        parent: _statsController,
+        curve: Interval(start, end, curve: Curves.easeOut),
+      );
+    });
+
+    _slideAnimations = List.generate(3, (index) {
+      final start = index * 0.15;
+      final end = (start + 0.6).clamp(0.0, 1.0);
+      return Tween<Offset>(
+        begin: const Offset(0.0, 0.15),
+        end: Offset.zero,
+      ).animate(
+        CurvedAnimation(
+          parent: _statsController,
+          curve: Interval(start, end, curve: Curves.easeOutCubic),
+        ),
+      );
+    });
+
+    _statsController.forward();
+  }
+
+  @override
+  void dispose() {
+    _statsController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final birthdayProvider = widget.birthdayProvider;
     final colorScheme = Theme.of(context).colorScheme;
 
     return Row(
       children: [
         // Total Birthdays
         Expanded(
-          child: StatCard(
-            icon: Icons.cake_outlined,
-            number: '${birthdayProvider.totalBirthdayCount}',
-            label: 'Total Birthdays',
-            accentColor: colorScheme.primary,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+          child: FadeTransition(
+            opacity: _fadeAnimations[0],
+            child: SlideTransition(
+              position: _slideAnimations[0],
+              child: StatCard(
+                icon: Icons.cake_outlined,
+                number: '${birthdayProvider.totalBirthdayCount}',
+                label: 'Total Birthdays',
+                accentColor: colorScheme.primary,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 10),
         // This Month
         Expanded(
-          child: StatCard(
-            icon: Icons.calendar_month_outlined,
-            number: '${birthdayProvider.thisMonthsBirthdayCount}',
-            label: 'This Month',
-            accentColor: colorScheme.secondary,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+          child: FadeTransition(
+            opacity: _fadeAnimations[1],
+            child: SlideTransition(
+              position: _slideAnimations[1],
+              child: StatCard(
+                icon: Icons.calendar_month_outlined,
+                number: '${birthdayProvider.thisMonthsBirthdayCount}',
+                label: 'This Month',
+                accentColor: colorScheme.secondary,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 10),
         // Today
         Expanded(
-          child: StatCard(
-            icon: Icons.celebration_outlined,
-            number: '${birthdayProvider.todayBirthdays.length}',
-            label: "Today's",
-            accentColor: AppTheme.celebrationGold,
-            onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+          child: FadeTransition(
+            opacity: _fadeAnimations[2],
+            child: SlideTransition(
+              position: _slideAnimations[2],
+              child: StatCard(
+                icon: Icons.celebration_outlined,
+                number: '${birthdayProvider.todayBirthdays.length}',
+                label: "Today's",
+                accentColor: AppTheme.celebrationGold,
+                onTap: () => Navigator.pushNamed(context, AppRoutes.birthdays),
+              ),
+            ),
           ),
         ),
       ],
