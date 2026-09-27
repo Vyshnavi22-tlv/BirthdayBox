@@ -6,6 +6,7 @@ import '../routes/app_routes.dart';
 import '../theme/app_theme.dart';
 import '../utils/constants.dart';
 import '../widgets/birthday_card.dart';
+import '../widgets/celebration_card.dart';
 import '../widgets/countdown_card.dart';
 import '../widgets/custom_button.dart';
 import '../widgets/responsive_layout.dart';
@@ -70,6 +71,7 @@ class _DashboardScreenState extends State<DashboardScreen>
         child: ResponsiveLayout.builder(
         builder: (context, constraints, deviceType) {
           final upcomingList = birthdayProvider.upcomingBirthdays;
+          final todayBirthdays = birthdayProvider.todayBirthdays;
 
           // Responsive horizontal padding across breakpoints
           final horizontalPadding = ResponsiveLayout.value<double>(
@@ -95,6 +97,23 @@ class _DashboardScreenState extends State<DashboardScreen>
               // 1. Welcome Greeting Banner (Shared across layouts)
               _WelcomeBanner(layoutName: layoutBadge),
               const SizedBox(height: 16),
+
+              // Birthday Celebration Feature: If today is someone's birthday!
+              if (todayBirthdays.isNotEmpty) ...[
+                ...todayBirthdays.map(
+                  (b) => Padding(
+                    padding: const EdgeInsets.only(bottom: 16.0),
+                    child: CelebrationCard(
+                      birthday: b,
+                      onTap: () => Navigator.pushNamed(
+                        context,
+                        AppRoutes.birthdayDetails,
+                        arguments: b.id,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
 
               // 2. Statistics Row (Total Birthdays, This Month, Today's) - Shared component
               _DashboardStatisticsRow(birthdayProvider: birthdayProvider),
