@@ -104,10 +104,17 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
 
   void _confirmDeleteBirthday(BuildContext context, Birthday b) {
     final provider = Provider.of<BirthdayProvider>(context, listen: false);
+    final theme = Theme.of(context);
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Birthday'),
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 24),
+            const SizedBox(width: 8),
+            const Text('Delete Birthday'),
+          ],
+        ),
         content: Text('Are you sure you want to delete ${b.name}’s birthday?'),
         actions: [
           TextButton(
@@ -116,7 +123,8 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
           ),
           FilledButton(
             style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
+              backgroundColor: theme.colorScheme.error,
+              foregroundColor: theme.colorScheme.onError,
             ),
             onPressed: () {
               provider.deleteBirthday(b.id);
@@ -444,14 +452,28 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
 
   /// Global empty state when no birthdays exist in BirthdayProvider.
   Widget _buildGlobalEmptyState(BuildContext context, ThemeData theme) {
+    final colorScheme = theme.colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 36.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('🎂', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 16),
+            Container(
+              width: 92,
+              height: 92,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Text('🎂', style: TextStyle(fontSize: 44)),
+            ),
+            const SizedBox(height: 20),
             Text(
               'No birthdays added yet!',
               style: theme.textTheme.titleLarge?.copyWith(
@@ -463,7 +485,7 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
             Text(
               'Never miss a celebration. Add your first birthday to get started!',
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
@@ -489,17 +511,29 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
     ThemeData theme,
   ) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 48.0),
+      padding: const EdgeInsets.symmetric(vertical: 48.0, horizontal: 20.0),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.search_off_rounded,
-              size: 56,
-              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.7),
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.outline.withValues(alpha: 0.2),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.search_off_rounded,
+                size: 40,
+                color: colorScheme.onSurfaceVariant.withValues(alpha: 0.8),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 16),
             Text(
               'No birthdays found',
               style: theme.textTheme.titleMedium?.copyWith(
@@ -514,8 +548,9 @@ class _BirthdaysScreenState extends State<BirthdaysScreen> {
               style: theme.textTheme.bodySmall?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
+              textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
             OutlinedButton.icon(
               onPressed: _resetFilters,
               icon: const Icon(Icons.refresh, size: 18),

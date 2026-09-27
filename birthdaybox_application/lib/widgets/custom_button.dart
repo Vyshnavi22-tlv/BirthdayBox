@@ -24,18 +24,30 @@ class CustomButton extends StatelessWidget {
     final colorScheme = theme.colorScheme;
 
     if (isLoading) {
-      return SizedBox(
-        height: 48,
-        child: Center(
-          child: SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(
-              strokeWidth: 2.5,
-              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
-            ),
+      final spinner = SizedBox(
+        width: 20,
+        height: 20,
+        child: CircularProgressIndicator(
+          strokeWidth: 2.2,
+          valueColor: AlwaysStoppedAnimation<Color>(
+            isOutlined ? colorScheme.primary : Colors.white,
           ),
         ),
+      );
+
+      if (isOutlined) {
+        return OutlinedButton(
+          onPressed: null,
+          child: spinner,
+        );
+      }
+
+      return ElevatedButton(
+        onPressed: null,
+        style: ElevatedButton.styleFrom(
+          disabledBackgroundColor: colorScheme.primary.withValues(alpha: 0.7),
+        ),
+        child: spinner,
       );
     }
 

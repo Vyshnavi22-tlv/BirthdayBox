@@ -58,7 +58,13 @@ class BirthdayDetailsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete Birthday'),
+        title: Row(
+          children: [
+            Icon(Icons.delete_outline, color: theme.colorScheme.error, size: 24),
+            const SizedBox(width: 8),
+            const Text('Delete Birthday'),
+          ],
+        ),
         content: Text(
           'Are you sure you want to delete ${b.name}’s birthday? This action cannot be undone.',
         ),

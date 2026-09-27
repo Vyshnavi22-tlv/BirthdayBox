@@ -659,25 +659,40 @@ class _EmptyBirthdaysPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(28.0),
+        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
         child: Column(
           children: [
-            const Text('🎂', style: TextStyle(fontSize: 40)),
-            const SizedBox(height: 8),
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.35),
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: colorScheme.primary.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
+              ),
+              alignment: Alignment.center,
+              child: const Text('🎂', style: TextStyle(fontSize: 34)),
+            ),
+            const SizedBox(height: 14),
             Text(
               'No upcoming birthdays',
               style: theme.textTheme.titleMedium?.copyWith(
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 6),
             Text(
               'Tap "+ Add Birthday" to record your loved ones’ special days.',
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+                color: colorScheme.onSurfaceVariant,
               ),
             ),
           ],
@@ -744,10 +759,19 @@ void _confirmDelete(
   BirthdayProvider provider,
   Birthday birthday,
 ) {
+  final theme = Theme.of(context);
+  final colorScheme = theme.colorScheme;
+
   showDialog(
     context: context,
     builder: (ctx) => AlertDialog(
-      title: const Text('Delete Birthday?'),
+      title: Row(
+        children: [
+          Icon(Icons.delete_outline, color: colorScheme.error, size: 24),
+          const SizedBox(width: 8),
+          const Text('Delete Birthday?'),
+        ],
+      ),
       content: Text(
         'Are you sure you want to remove ${birthday.name}’s birthday celebration from your list?',
       ),
@@ -758,7 +782,7 @@ void _confirmDelete(
         ),
         ElevatedButton(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.error,
+            backgroundColor: colorScheme.error,
             foregroundColor: Colors.white,
           ),
           onPressed: () {
@@ -767,6 +791,7 @@ void _confirmDelete(
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Text('Removed ${birthday.name}’s birthday'),
+                behavior: SnackBarBehavior.floating,
                 action: SnackBarAction(
                   label: 'Dismiss',
                   textColor: Colors.white,
