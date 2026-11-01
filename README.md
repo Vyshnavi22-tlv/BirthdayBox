@@ -1,4 +1,4 @@
-# 🎂 BirthdayBox
+#  BirthdayBox
 
 ### A Responsive Smart Birthday Management & Reminder Application
 
@@ -8,9 +8,9 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 
 ---
 
-## ✨ Features
+##  Features
 
-### 🔐 Authentication
+###  Authentication
 
 * Login screen
 * Sign-up screen
@@ -18,7 +18,7 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 * Password visibility toggle
 * Responsive authentication UI
 
-### 🏠 Dashboard
+###  Dashboard
 
 * Personalized welcome message
 * Total birthday count
@@ -27,7 +27,7 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 * Upcoming birthday cards
 * Quick access to add birthdays
 
-### 🎂 Birthday Management
+###  Birthday Management
 
 * Add a new birthday
 * Edit birthday information
@@ -37,14 +37,14 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 * Birthday countdown
 * Upcoming birthday tracking
 
-### 📅 Calendar
+###  Calendar
 
 * Monthly calendar view
 * Birthday indicators
 * Select a date to view birthdays
 * Birthday details from calendar
 
-### 👤 Profile
+###  Profile
 
 * User profile
 * Personal information
@@ -52,7 +52,7 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 * Notification settings
 * Logout
 
-### 🎨 UI & Customization
+###  UI & Customization
 
 * Light Theme
 * Dark Theme
@@ -62,17 +62,17 @@ The application is designed to work seamlessly across **mobile, tablet, and desk
 * Custom birthday widgets
 * Consistent typography and spacing
 
-### 📱 Responsive Design
+###  Responsive Design
 
 BirthdayBox supports:
 
-* 📱 Mobile
-* 📲 Tablet
-* 🖥️ Desktop
+*  Mobile
+*  Tablet
+*  Desktop
 
 The interface automatically adapts based on screen width.
 
-### 🎬 Animations
+###  Animations
 
 * Animated splash screen
 * Fade animations
@@ -83,7 +83,7 @@ The interface automatically adapts based on screen width.
 
 ---
 
-# 🧪 Flutter Lab Experiment Coverage
+#  Flutter Lab Experiment Coverage
 
 BirthdayBox is designed to demonstrate all the experiments required for the Flutter laboratory.
 
@@ -108,7 +108,7 @@ BirthdayBox is designed to demonstrate all the experiments required for the Flut
 
 ---
 
-# 📱 Application Screens
+#  Application Screens
 
 ## 1. Splash Screen
 
@@ -206,12 +206,12 @@ Displays complete information about a selected person.
 Example:
 
 ```text
-👩
+
 
 Ananya
 Friend
 
-🎂 15 October
+ 15 October
 
 Birthday in:
 02 Days
@@ -242,15 +242,15 @@ The profile screen allows users to:
 
 ---
 
-# 🌗 Theme System
+#  Theme System
 
 BirthdayBox supports both Light and Dark themes.
 
-### ☀️ Light Mode
+###  Light Mode
 
 Designed with a clean and bright interface.
 
-### 🌙 Dark Mode
+###  Dark Mode
 
 Designed for comfortable viewing in low-light environments.
 
@@ -260,11 +260,11 @@ Theme state is managed globally using **Provider**.
 
 ---
 
-# 📐 Responsive Design
+#  Responsive Design
 
 BirthdayBox uses responsive design techniques to provide different layouts for different screen sizes.
 
-### 📱 Mobile
+###  Mobile
 
 ```text
 Width < 600px
@@ -274,7 +274,7 @@ Width < 600px
 * Bottom navigation
 * Full-width cards
 
-### 📲 Tablet
+###  Tablet
 
 ```text
 600px ≤ Width < 1024px
@@ -284,7 +284,7 @@ Width < 600px
 * Expanded dashboard
 * Adaptive spacing
 
-### 🖥️ Desktop
+###  Desktop
 
 ```text
 Width ≥ 1024px
@@ -305,7 +305,7 @@ Responsive layouts are implemented using Flutter's:
 
 ---
 
-# 🧩 Custom Widgets
+#  Custom Widgets
 
 The application uses reusable widgets to maintain consistency and reduce duplicate code.
 
@@ -315,8 +315,8 @@ Displays birthday information.
 
 ```text
 ┌─────────────────────────┐
-│ 👩 Ananya               │
-│ 🎂 Tomorrow             │
+│  Ananya               │
+│  Tomorrow             │
 │ Friend                  │
 └─────────────────────────┘
 ```
@@ -327,7 +327,7 @@ Displays dashboard statistics.
 
 ```text
 ┌───────────────┐
-│ 🎂 12         │
+│  12         │
 │ Birthdays     │
 └───────────────┘
 ```
@@ -346,7 +346,7 @@ Displays the remaining time until a birthday.
 
 ---
 
-# 🔄 Navigation
+#  Navigation
 
 BirthdayBox uses Flutter's navigation system.
 
@@ -383,7 +383,7 @@ Dashboard
 
 ---
 
-# 🔄 State Management
+#  State Management
 
 BirthdayBox demonstrates two Flutter state management approaches.
 
@@ -408,7 +408,7 @@ Used for application-wide state such as:
 
 ---
 
-# 🎬 Animations
+#  Animations
 
 The application uses Flutter's animation framework to improve the user experience.
 
@@ -436,18 +436,12 @@ Birthday cards use:
 When a birthday occurs:
 
 ```text
-🎈       🎈
-
-    🎂
-
 HAPPY BIRTHDAY!
-
-   🎉 🎊 🎉
 ```
 
 ---
 
-# 🗂️ Project Structure
+#  Project Structure
 
 ```text
 birthday_box/
@@ -503,7 +497,7 @@ birthday_box/
 
 ---
 
-# 🛠️ Technologies Used
+#  Technologies Used
 
 | Technology        | Purpose                          |
 | ----------------- | -------------------------------- |
@@ -517,7 +511,7 @@ birthday_box/
 
 ---
 
-# ⚙️ Requirements
+#  Requirements
 
 Before running the project, install:
 
@@ -538,7 +532,7 @@ flutter doctor
 
 ---
 
-# 🚀 Installation & Setup
+#  Installation & Setup
 
 ### 1. Clone the repository
 
@@ -572,7 +566,7 @@ flutter run
 
 ---
 
-# 🧪 Testing Different Screen Sizes
+#  Testing Different Screen Sizes
 
 ### Mobile
 
@@ -594,7 +588,7 @@ The UI automatically changes according to the available screen width.
 
 ---
 
-# 🎯 Learning Objectives
+#  Learning Objectives
 
 Through BirthdayBox, the following Flutter concepts are demonstrated:
 
@@ -618,23 +612,23 @@ Through BirthdayBox, the following Flutter concepts are demonstrated:
 
 ---
 
-# 🌟 Future Enhancements
+#  Future Enhancements
 
 Possible future improvements include:
 
-* 🔔 Local birthday notifications
-* ☁️ Firebase authentication
-* ☁️ Cloud database
-* 📷 Profile image upload
-* 📤 Birthday sharing
-* 🎁 Gift suggestions
-* 🎵 Birthday reminder sounds
-* 📅 Google Calendar integration
-* 🔄 Cloud synchronization
+*  Local birthday notifications
+*  Firebase authentication
+*  Cloud database
+*  Profile image upload
+*  Birthday sharing
+*  Gift suggestions
+*  Birthday reminder sounds
+*  Google Calendar integration
+*  Cloud synchronization
 
 ---
 
-# 👩‍💻 Project
+#  Project
 
 **Project Name:** BirthdayBox
 **Type:** Flutter Mobile & Desktop Application
@@ -645,6 +639,6 @@ Possible future improvements include:
 
 ---
 
-## 🎂 Never Miss a Special Day!
+##  Never Miss a Special Day!
 
 BirthdayBox combines **responsive design, state management, reusable widgets, forms, themes, navigation, and animations** into one practical Flutter application.
